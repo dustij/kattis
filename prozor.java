@@ -4,7 +4,6 @@
 
 import java.util.Scanner;
 import java.util.stream.Stream;
-import java.util.List;
 
 public class prozor {
     public static void main(String[] args) {
