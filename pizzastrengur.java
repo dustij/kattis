@@ -61,45 +61,152 @@
  * 4      | 40     | n = 10^3, m = 2.45 * n
  */
 
+ // Version 3
+// import java.util.Scanner;
 
+// public class pizzastrengur {
+//     public static void main(String[] args) {
+//         Scanner in = new Scanner(System.in);
+//         StringBuilder sb = new StringBuilder();
+
+//         int n = in.nextInt();
+//         while (sb.length() < n) {
+//             System.out.println(sb.toString() + 'P');
+//             System.out.flush();
+//             int res = in.nextInt();
+//             if (res == 0) {
+//                 System.out.println(sb.toString() + 'I');
+//                 System.out.flush();
+//                 res = in.nextInt();
+//                 if (res == 0) {
+//                     System.out.println(sb.toString() + 'Z');
+//                     System.out.flush();
+//                     res = in.nextInt();
+//                     if (res == 0) {
+//                         sb.append('A');
+//                         if (sb.length() == n) {
+//                             System.out.println(sb.toString());
+//                             System.out.flush();
+//                             break;
+//                         } else {
+//                             continue;
+//                         }
+
+//                     } else if (res == 1) {
+//                         sb.append('Z');
+//                         continue;
+//                     } else if (res == 2) {
+//                         break;
+//                     }
+
+//                 } else if (res == 1) {
+//                     sb.append('I');
+//                     continue;
+//                 } else if (res == 2) {
+//                     break;
+//                 }
+
+//             } else if (res == 1) {
+//                 sb.append('P');
+//                 continue;
+//             } else if (res == 2) {
+//                 break;
+//             }
+//         }
+//     }
+// }
+
+ // Version 2
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Random;
 import java.util.Scanner;
 
-public class pizzastrengur {
+ public class pizzastrengur {
     public static void main(String[] args) {
         Scanner in = new Scanner(System.in);
         StringBuilder sb = new StringBuilder();
         char[] choices = {'P', 'I', 'Z', 'A'};
+        Random rand = new Random();
 
-        int length = in.nextInt();
-        for (int i = 0; i < length; i++) {
-            int guessCount = 0; // only allow 3 guess per character, don't need to guess the last
-                                // because obvisouly that is correct, just move on to next prefix
-            for (char choice : choices) {
-                if (guessCount == 3) {
-                    sb.append(choice);
-                    if (sb.length() == length) {
-                        System.out.println(sb.toString());
-                        return;
-                    }
-                    break;
-                }
+        int length = in.nextInt(); // Length of the passcode
 
+        while (sb.length() < length) {
+            // Shuffle choices for randomness
+            List<Character> shuffledChoices = new ArrayList<>();
+            for (char c : choices) shuffledChoices.add(c);
+            Collections.shuffle(shuffledChoices, rand);
+
+            for (char choice : shuffledChoices) {
                 sb.append(choice);
+
+                // Make guess
                 System.out.println(sb.toString());
-                int res = in.nextInt(); 
-                guessCount++;
+                System.out.flush();
+
+                // Judges response
+                int res = in.nextInt();
 
                 if (res == 2) {
-                    // stop guessing
+                    // We did it!
                     return;
                 } else if (res == 1) {
-                    // valid prefix
+                    // This is a valid prefix, moving on
                     break;
                 } else {
-                    // invalid prefix
+                    // This ain't right, remove the last character and try again
                     sb.deleteCharAt(sb.length() - 1);
                 }
             }
+
         }
+
     }
-}
+ }
+
+
+// Version 1
+
+// import java.util.Scanner;
+
+// public class pizzastrengur {
+//     public static void main(String[] args) {
+//         Scanner in = new Scanner(System.in);
+//         StringBuilder sb = new StringBuilder();
+//         char[] choices = {'P', 'I', 'Z', 'A'};
+
+//         int length = in.nextInt();
+//         for (int i = 0; i < length; i++) {
+//             int guessCount = 0; // only allow 3 guess per character, don't need to guess the last
+//                                 // because obvisouly that is correct, just move on to next prefix
+//             for (char choice : choices) {
+//                 if (guessCount == 3) {
+//                     sb.append(choice);
+//                     if (sb.length() == length) {
+//                         System.out.println(sb.toString());
+//                         return;
+//                     }
+//                     break;
+//                 }
+
+//                 sb.append(choice);
+//                 System.out.println(sb.toString());
+//                 int res = in.nextInt(); 
+//                 guessCount++;
+
+//                 if (res == 2) {
+//                     // stop guessing
+//                     return;
+//                 } else if (res == 1) {
+//                     // valid prefix
+//                     break;
+//                 } else {
+//                     // invalid prefix
+//                     sb.deleteCharAt(sb.length() - 1);
+//                 }
+//             }
+//         }
+//     }
+// }
