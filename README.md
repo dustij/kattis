@@ -1,2 +1,2 @@
 # kattis
-A collection of my soltions (or attempts) for kattis problems.
+A collection of my solutions (or attempts) for kattis problems.
