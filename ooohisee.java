@@ -40,10 +40,7 @@ public class ooohisee
           if (!grid[r+1][c].equals("O")) continue;
           if (!grid[r+1][c+1].equals("O")) continue;
 
-          locs.add(new int[]
-          {
-              r, c
-          });
+          locs.add(new int[] {r, c});
         }
       }
     }
