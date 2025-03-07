@@ -56,7 +56,9 @@ public class rhythmflow {
             // scores[row - 1][c] = 0;
             // }
             // Actualy, it might be good to look at diagnols, the abs diff between current cell and
-            // the cell up and to the left
+            // the cell up and to the left, vs. cell to the right and cell above
+            // 1 0 0 || 0 1 0
+            // 0 1 0 || 0 0 1
           }
         }
 
