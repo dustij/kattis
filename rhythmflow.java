@@ -30,22 +30,24 @@ public class rhythmflow {
         int score = getScore(Math.abs(e[col] - a[row]));
 
         if (row - 1 < 0) { // This is fist row
-          // If the previous is same or higher then continue
-          if (col - 1 < 0) {
-            scores[row][col] = score;
+          if (col - 1 < 0) { // This is the first col in the first row
+            scores[row][col] = score; // Just save it and continue
             continue;
-          } else {
-            if (scores[row][col - 1] >= score) {
+          } else { // This is all other cols in the first row
+            if (scores[row][col - 1] >= score) { // If score is going down, flag to move to next row
+              // note: should I use ">=" here?
               flagged = true;
-            } else {
+            } else { // Save score
               scores[row][col] = score;
             }
           }
-        } else {
+        } else { // This is all rows after the first
           if (score > scores[row - 1][col]) {
+            // If this is a better score for the col, save it and move to next row (flag)
             scores[row][col] = score;
             flagged = true;
           } else {
+            // Take the better score from the cell above
             scores[row][col] = scores[row - 1][col];
             // This here, do if we know is optimal later, remapping scores lower to gain net +1
             // i.e. 6-7=-1 6-4=2, thus net +1
@@ -53,6 +55,8 @@ public class rhythmflow {
             // for (int c = col + 1; c < n; c++) {
             // scores[row - 1][c] = 0;
             // }
+            // Actualy, it might be good to look at diagnols, the abs diff between current cell and
+            // the cell up and to the left
           }
         }
 
