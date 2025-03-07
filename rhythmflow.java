@@ -19,8 +19,6 @@ public class rhythmflow {
       a[i] = sc.nextInt();
     }
 
-    // FIXME: if there is 1 actual but more than 1 expected, not allowed to sum scores across row
-
     // Populate scores
     int[][] scores = new int[m][n];
     for (int row = 0; row < m; row++) {
@@ -39,6 +37,8 @@ public class rhythmflow {
           } else {
             if (scores[row][col - 1] >= score) {
               flagged = true;
+            } else {
+              scores[row][col] = score;
             }
           }
         } else {
@@ -47,6 +47,12 @@ public class rhythmflow {
             flagged = true;
           } else {
             scores[row][col] = scores[row - 1][col];
+            // This here, do if we know is optimal later, remapping scores lower to gain net +1
+            // i.e. 6-7=-1 6-4=2, thus net +1
+            // for the row above, col 1 greater to the end, 0 out
+            // for (int c = col + 1; c < n; c++) {
+            // scores[row - 1][c] = 0;
+            // }
           }
         }
 
@@ -54,7 +60,7 @@ public class rhythmflow {
     }
 
     int finalScore = 0;
-    if (scores.length == 1) {
+    if (scores.length == 1) { // There was one actual (only 1 row)
       finalScore = Arrays.stream(scores[0]).max().getAsInt();
     } else {
       finalScore = Arrays.stream(scores[scores.length - 1]).sum();
