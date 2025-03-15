@@ -1,5 +1,4 @@
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.PriorityQueue;
 import java.util.Scanner;
 
 public class bikesandbarricades {
@@ -13,37 +12,28 @@ public class bikesandbarricades {
             }
         }
 
-        // Is there a barricade on possitve y-axis?
-        boolean isBarricade = false;
-        ArrayList<Double> listOfYs = new ArrayList<>();
+        PriorityQueue<Double> queue = new PriorityQueue<>();
+
         for (int row = 0; row < n; row++) {
             double x1 = (double) barricades[row][0];
             double y1 = (double) barricades[row][1];
             double x2 = (double) barricades[row][2];
             double y2 = (double) barricades[row][3];
 
-            // double Y = y1 + ((x1 * x1) - (x1 * x2)) / (y2 - y1);
-            double Y = (x1 * x2 - x1 * x1 - y1 * y2 + y1 * y1) / (x2 - x1);
+            double m = (y2 - y1) / (x2 - x1); // slope
+            double b = y1 - m * x1; // y-intercept
 
-            if (Y > 0) {
-                isBarricade = true;
-                listOfYs.add(Y);
-            }
+            // Does this line cross the positive y-axis?
+            if (b > 0)
+                if ((x1 >= 0 && x2 <= 0) || (x1 <= 0 && x2 >= 0))
+                    queue.offer(b);
         }
 
-        // Quit if there isn't
-        if (!isBarricade) {
-            System.out.println("-1.0");
+        if (queue.isEmpty()) {
+            System.out.println(-1.0);
             return;
         }
 
-        double min = Double.MAX_VALUE;
-        for (int i = 0; i < listOfYs.size(); i++) {
-            if (listOfYs.get(i) < min) {
-                min = listOfYs.get(i);
-            }
-        }
-
-        System.out.println(min);
+        System.out.println(queue.poll());
     }
 }
