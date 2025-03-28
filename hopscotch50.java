@@ -8,17 +8,20 @@ import java.util.PriorityQueue;
 
 public class hopscotch50 {
 
-    static class Node {
+    static class Node implements Comparable<Node> {
         int x;
         int y;
-        boolean visited;
         int distance;
 
         Node(int x, int y) {
             this.x = x;
             this.y = y;
-            visited = false;
-            distance = Integer.MAX_VALUE;
+            distance = 0;
+        }
+
+        @Override
+        public int compareTo(hopscotch50.Node o) {
+            return Integer.compare(distance, o.distance);
         }
     }
 
@@ -61,13 +64,17 @@ public class hopscotch50 {
         // printQueue(stacksList);
 
         // Get shortest distance for each starting point to each ending point
-        var startStack = stacksList.poll();
-        var endStack = stacksList.getLast();
+        // this turns stackList from, ex. [1, 2, 3, 4] -> [2, 3] i.e. the middle stacks
+        var startStack = stacksList.pollFirst();
+        var endStack = stacksList.pollLast();
 
         // printQueue(stacksList);
 
         while (!startStack.empty()) {
-            // Temporary list to preserve base nodes
+            // Temporary stack to preserve endStack
+            Stack<Node> tempStack = new Stack<>();
+
+            // Temporary llist to preserve base nodes
             LinkedList<Stack<Node>> tempList = new LinkedList<>();
             for (var stack : stacksList) {
                 var newStack = new Stack<Node>();
@@ -80,28 +87,57 @@ public class hopscotch50 {
             Node startNode = startStack.pop();
 
             while (!endStack.empty()) {
+                // Get a node and make copy to restore it later
                 Node endNode = endStack.pop();
+                tempStack.add(new Node(endNode.x, endNode.y));
 
-                // Solve and save min distance
-                minHeap.offer(solve(startNode, stacksList.subList(0, stacksList.size() - 1), endNode));
+                // Solve and save min distance (dijkstras algorithm)
+                minHeap.offer(solve(startNode, stacksList, endNode));
 
             }
 
-            // Restore list back to base
+            // Restore end stack
+            while (!tempStack.isEmpty()) {
+                endStack.push(tempStack.pop());
+            }
+
+            // Restore llist
             for (int i = 0; i < tempList.size(); i++) {
-                stacksList.set(i, tempList.get(i));
+                stacksList.add(tempList.get(i));
             }
 
 
         }
 
+        System.out.println(minHeap.peek());
+
         // printQueue(stacksList);
 
     }
 
-    public static Integer solve(Node startNode, List<Stack<Node>> nodesBetween, Node endNode) {
+    public static Integer solve(Node startNode, LinkedList<Stack<Node>> nodesBetween, Node endNode) {
         // Dijkstras Algorithm
-        return 1;
+
+        // Ordered by distance
+        PriorityQueue<Node> nextNodes = new PriorityQueue<>();
+
+        while (!nodesBetween.isEmpty()) {
+            Stack<Node> currStack = nodesBetween.pollFirst();
+
+            while (!currStack.empty()) {
+                Node currNode = currStack.pop();
+                currNode.distance += getDistance(startNode, currNode);
+                nextNodes.offer(currNode);
+            }
+
+            // Set start node to the one with min distance
+            startNode = nextNodes.poll();
+
+            // Empty queue for next run
+            nextNodes = new PriorityQueue<>();
+        }
+
+        return getDistance(startNode, endNode);
     }
 
     public static void printQueue(LinkedList<Stack<Node>> queue) {
@@ -116,8 +152,8 @@ public class hopscotch50 {
             Stack<Node> tempStack = new Stack<>();
             while (!stack.isEmpty()) {
                 Node node = stack.pop();
-                System.out.printf("  Node(x=%d, y=%d, visited=%b, distance=%d)\n",
-                        node.x, node.y, node.visited, node.distance);
+                System.out.printf("  Node(x=%d, y=%d, distance=%d)\n",
+                        node.x, node.y, node.distance);
                 tempStack.push(node);
             }
 
