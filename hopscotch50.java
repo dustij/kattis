@@ -1,7 +1,6 @@
 import java.util.Scanner;
 import java.util.Stack;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.PriorityQueue;
 
 
@@ -9,11 +8,13 @@ import java.util.PriorityQueue;
 public class hopscotch50 {
 
     static class Node implements Comparable<Node> {
+        int id;
         int x;
         int y;
         int distance;
 
-        Node(int x, int y) {
+        Node(int id, int x, int y) {
+            this.id = id;
             this.x = x;
             this.y = y;
             distance = 0;
@@ -23,9 +24,14 @@ public class hopscotch50 {
         public int compareTo(hopscotch50.Node o) {
             return Integer.compare(distance, o.distance);
         }
+
+        @Override
+        protected Node clone() throws CloneNotSupportedException {
+            return new Node(id, x, y);
+        }
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws CloneNotSupportedException {
         Scanner sc = new Scanner(System.in);
 
         int n = sc.nextInt();
@@ -49,7 +55,7 @@ public class hopscotch50 {
             for (int col = 0; col < n; col++) {
                 int num = sc.nextInt();
                 exists[num - 1] = true;
-                stacks.get(num - 1).add(new Node(row, col));
+                stacks.get(num - 1).add(new Node(num, row, col));
             }
         }
 
@@ -61,127 +67,46 @@ public class hopscotch50 {
             }
         }
 
-        // printQueue(stacksList);
+        // For each node in the first stack, use dijkstras algorithm
+        // to find min distance to each node in the last stack, store
+        // distance in minHeap to output at the end
 
-        // Get shortest distance for each starting point to each ending point
-        // this turns stackList from, ex. [1, 2, 3, 4] -> [2, 3] i.e. the middle stacks
-        var startStack = stacks.pollFirst();
-        var endStack = stacks.pollLast();
+        var firstStack = stacks.pollFirst();
+        var lastStack = stacks.pollLast();
 
-        // System.out.println("1. stacks between : " + stacks.size());
+        while (!firstStack.empty()) {
+            var startNode = firstStack.pop();
 
-        // printQueue(stacksList);
-
-        while (!startStack.empty()) {
-            // Temporary stack to preserve endStack
-            Stack<Node> tempStack = new Stack<>();
-
-            // Temporary llist to preserve base nodes
-            LinkedList<Stack<Node>> tempStacks = new LinkedList<>();
-            for (var stack : stacks) {
-                var newStack = new Stack<Node>();
-                for (var node : stack) {
-                    newStack.add(new Node(node.x, node.y));
-                }
-                tempStacks.add(stack);
+            for (int i = 0; i < lastStack.size(); i++) {
+                // Must preserve orignal end node
+                Node endNode = lastStack.get(i).clone();
+                int minDistance = solve(startNode, stacks, endNode);
+                minHeap.offer(minDistance);
             }
 
-            Node startNode = startStack.pop();
-
-            // System.out.println("2. stacks between : " + stacks.size());
-
-            while (!endStack.empty()) {
-                System.out.println("________ choosing end node __________");
-                // Get a node and make copy to restore it later
-                Node endNode = endStack.pop();
-                tempStack.add(new Node(endNode.x, endNode.y));
-
-                // System.out.println("3. stacks between : " + stacks.size());
-
-                // System.out.println(startNode);
-                // Solve and save min distance (dijkstras algorithm)
-                minHeap.offer(solve(startNode, stacks, endNode));
-                // System.out.println(startNode);
-
-                // Restore llist
-                for (int i = 0; i < tempStacks.size(); i++) {
-                    stacks.add(tempStacks.get(i));
-                }
-            }
-
-            // Restore end stack
-            while (!tempStack.isEmpty()) {
-                endStack.push(tempStack.pop());
-            }
-
-
-
-            // // Restore llist
-            // for (int i = 0; i < tempStacks.size(); i++) {
-            // stacks.add(tempStacks.get(i));
-            // }
-
-
+            // Before moving on to the next start node, reset all node distances
         }
 
+        // Output the answer
         System.out.println(minHeap.peek());
-
-        // printQueue(stacksList);
 
     }
 
-    public static Integer solve(Node startNode, LinkedList<Stack<Node>> nodesBetween, Node endNode) {
+    public static Integer solve(Node startNode, LinkedList<Stack<Node>> stacks, Node endNode) {
         // Dijkstras Algorithm
 
-        // Preserve start node
-        Node localStartNode = new Node(startNode.x, startNode.y);
+        System.out.println("Starting at " + startNode.id);
+        System.out.println("Ending at " + endNode.id);
+        System.out.println("Nodes to traverse:");
+        printQueue(stacks);
 
-        // Preserve nodes between
-        LinkedList<Stack<Node>> nodesBetweenLocal = new LinkedList<>();
-        for (var stack : nodesBetween) {
-            Stack<Node> newStack = new Stack<>();
-            for (var node : stack) {
-                newStack.push(new Node(node.x, node.y));
-            }
-            nodesBetweenLocal.add(newStack);
-        }
+        // Note: part of dijsktras algorithm is to start the next iteration
+        // at the node with the smallest distance, we can store nodes in
+        // a priority queue after we update each nodes distance, the Node
+        // is a Comparable, and compares distances, that ways the head of the
+        // queue will always be the node with the smallest distance
 
-        // Ordered by distance
-        PriorityQueue<Node> nextNodes = new PriorityQueue<>();
-
-
-        while (!nodesBetweenLocal.isEmpty()) {
-            // System.out.println("4. nodes between : " + nodesBetweenLocal.size());
-
-            Stack<Node> currStack = nodesBetweenLocal.pollFirst();
-
-            // System.out.println("1 - next Nodes size : " + nextNodes.size());
-
-            // System.out.println("Curr Stack size = " + currStack.size());
-
-            while (!currStack.empty()) {
-                Node currNode = currStack.pop();
-                currNode.distance += getDistance(localStartNode, currNode) + localStartNode.distance;
-                nextNodes.offer(currNode);
-            }
-
-            // System.out.println("2 - next Nodes size : " + nextNodes.size());
-
-            // Set start node to the one with min distance
-            localStartNode = nextNodes.poll();
-
-            // Empty queue for next run
-            nextNodes = new PriorityQueue<>();
-            // System.out.println("nodes between left " + nodesBetweenLocal.size());
-        }
-
-        // System.out.println("calc distance");
-
-        // System.out.println("local start node: " + localStartNode);
-
-        int d = getDistance(localStartNode, endNode) + localStartNode.distance;
-
-        return d;
+        return 0;
     }
 
     public static void printQueue(LinkedList<Stack<Node>> queue) {
@@ -196,8 +121,8 @@ public class hopscotch50 {
             Stack<Node> tempStack = new Stack<>();
             while (!stack.isEmpty()) {
                 Node node = stack.pop();
-                System.out.printf("  Node(x=%d, y=%d, distance=%d)\n",
-                        node.x, node.y, node.distance);
+                System.out.printf("  Node(id=%d, x=%d, y=%d, distance=%d)\n",
+                        node.id, node.x, node.y, node.distance);
                 tempStack.push(node);
             }
 
