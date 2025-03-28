@@ -77,14 +77,29 @@ public class hopscotch50 {
         while (!firstStack.empty()) {
             var startNode = firstStack.pop();
 
+
             for (int i = 0; i < lastStack.size(); i++) {
-                // Must preserve orignal end node
-                Node endNode = lastStack.get(i).clone();
-                int minDistance = solve(startNode, stacks, endNode);
+                // Preserve orignal stacks
+                LinkedList<Stack<Node>> stacksCopy = new LinkedList<>();
+                for (int j = 0; j < stacks.size(); j++) {
+                    Stack<Node> stackCopy = new Stack<>();
+                    for (var node : stacks.get(j)) {
+                        stackCopy.push(node.clone());
+                    }
+                    stacksCopy.add(stackCopy);
+                }
+
+                // Dijkstras algorithm solve
+                Node endNode = lastStack.get(i);
+                int minDistance = solve(startNode, stacksCopy, endNode);
                 minHeap.offer(minDistance);
             }
 
-            // Before moving on to the next start node, reset all node distances
+            // debug
+            // for (var i : minHeap) {
+            // System.out.println(i);
+            // }
+            // System.exit(0);
         }
 
         // Output the answer
@@ -92,13 +107,13 @@ public class hopscotch50 {
 
     }
 
-    public static Integer solve(Node startNode, LinkedList<Stack<Node>> stacks, Node endNode) {
+    public static Integer solve(Node currNode, LinkedList<Stack<Node>> stacks, Node endNode) {
         // Dijkstras Algorithm
 
-        System.out.println("Starting at " + startNode.id);
-        System.out.println("Ending at " + endNode.id);
-        System.out.println("Nodes to traverse:");
-        printQueue(stacks);
+        // System.out.println("Starting at " + currNode.id);
+        // System.out.println("Ending at " + endNode.id);
+        // System.out.println("Nodes to traverse:");
+        // printQueue(stacks);
 
         // Note: part of dijsktras algorithm is to start the next iteration
         // at the node with the smallest distance, we can store nodes in
@@ -106,7 +121,38 @@ public class hopscotch50 {
         // is a Comparable, and compares distances, that ways the head of the
         // queue will always be the node with the smallest distance
 
-        return 0;
+        PriorityQueue<Node> minHeap = new PriorityQueue<>();
+
+        while (!stacks.isEmpty()) {
+            // 1. Update estimates
+            var nextStack = stacks.pollFirst();
+
+            while (!nextStack.empty()) {
+                Node node = nextStack.pop();
+                node.distance = getDistance(currNode, node) + currNode.distance;
+                minHeap.offer(node);
+            }
+
+            // printMinHeap(minHeap);
+            // printQueue(stacks);
+
+            // 2. Choose next node
+            currNode = minHeap.poll();
+
+            // System.out.printf(" CurrNode(id=%d, x=%d, y=%d, distance=%d)\n",
+            // currNode.id, currNode.x, currNode.y, currNode.distance);
+
+            // Reset minHeap
+            minHeap = new PriorityQueue<>();
+        }
+
+        // System.out.printf(" EndNode(id=%d, x=%d, y=%d, distance=%d)\n",
+        // endNode.id, endNode.x, endNode.y, endNode.distance);
+        // System.out.println("Current nodes distance = " + currNode.distance);
+        // System.out.println("Distance to last node from current node = " + getDistance(currNode,
+        // endNode));
+        // System.out.printf("Total distance = %d%n", getDistance(currNode, endNode) + currNode.distance);
+        return getDistance(currNode, endNode) + currNode.distance;
     }
 
     public static void printQueue(LinkedList<Stack<Node>> queue) {
@@ -132,6 +178,22 @@ public class hopscotch50 {
             }
         }
         System.out.println("----------------------");
+    }
+
+    public static void printStack(Stack<Node> stack) {
+        System.out.printf("Stack (size: %d):\n", stack.size());
+        for (var node : stack) {
+            System.out.printf("  Node(id=%d, x=%d, y=%d, distance=%d)\n",
+                    node.id, node.x, node.y, node.distance);
+        }
+    }
+
+    public static void printMinHeap(PriorityQueue<Node> stack) {
+        System.out.printf("MinHeap (size: %d):\n", stack.size());
+        for (var node : stack) {
+            System.out.printf("  Node(id=%d, x=%d, y=%d, distance=%d)\n",
+                    node.id, node.x, node.y, node.distance);
+        }
     }
 
     public static int getDistance(Integer[] p1, Integer[] p2) {
