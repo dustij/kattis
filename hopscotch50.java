@@ -12,12 +12,14 @@ public class hopscotch50 {
         int x;
         int y;
         int distance;
+        boolean visited;
 
         Node(int id, int x, int y) {
             this.id = id;
             this.x = x;
             this.y = y;
-            distance = 0;
+            distance = Integer.MAX_VALUE;
+            visited = false;
         }
 
         @Override
@@ -121,29 +123,72 @@ public class hopscotch50 {
         // is a Comparable, and compares distances, that ways the head of the
         // queue will always be the node with the smallest distance
 
+        // Starting node has 0 distance
+        currNode.distance = 0;
+
         PriorityQueue<Node> minHeap = new PriorityQueue<>();
+        minHeap.offer(currNode);
+
+        // Starting stack
+        Stack<Node> currStack = new Stack<>();
+        currStack.push(currNode);
 
         while (!stacks.isEmpty()) {
-            // 1. Update estimates
-            var nextStack = stacks.pollFirst();
+            // Get best node
+            currNode = minHeap.poll();
+            currNode.visited = true;
 
-            while (!nextStack.empty()) {
-                Node node = nextStack.pop();
-                node.distance = getDistance(currNode, node) + currNode.distance;
-                minHeap.offer(node);
+            // Reset minHeap
+            minHeap = new PriorityQueue<>();
+
+            // 1. Update estimates
+            // 1.1 Neighbors in current stack
+            for (var node : currStack) {
+                if (!node.visited) {
+                    node.distance = Math.min(node.distance, currNode.distance + getDistance(node, currNode));
+                    minHeap.offer(node);
+                }
             }
+
+            // 1.2 Neighbors in next
+            var nextStack = stacks.peekFirst();
+
+            for (var node : nextStack) {
+                if (!node.visited) {
+                    node.distance = Math.min(node.distance, currNode.distance + getDistance(node, currNode));
+                    minHeap.offer(node);
+                }
+            }
+
+            // Need to track which two stacks we are looking a
+            int nextId = nextStack.peek().id;
 
             // printMinHeap(minHeap);
             // printQueue(stacks);
 
             // 2. Choose next node
-            currNode = minHeap.poll();
+            currNode = minHeap.peek();
+
+            // Determine which stack we are in, and set up next loop accordingly
+            // If the best node is in the next stack, set it to current stack, otherwise do nothing
+            if (currNode.id == nextId) {
+                // Empty contents
+                currStack = new Stack<>();
+                while (!nextStack.empty()) {
+                    currStack.push(nextStack.pop());
+                }
+
+                // Move next stack over
+                var otherStack = stacks.pollFirst();
+                while (!otherStack.empty()) {
+                    nextStack.add(otherStack.pop());
+                }
+            }
 
             // System.out.printf(" CurrNode(id=%d, x=%d, y=%d, distance=%d)\n",
             // currNode.id, currNode.x, currNode.y, currNode.distance);
 
-            // Reset minHeap
-            minHeap = new PriorityQueue<>();
+
         }
 
         // System.out.printf(" EndNode(id=%d, x=%d, y=%d, distance=%d)\n",
@@ -183,16 +228,16 @@ public class hopscotch50 {
     public static void printStack(Stack<Node> stack) {
         System.out.printf("Stack (size: %d):\n", stack.size());
         for (var node : stack) {
-            System.out.printf("  Node(id=%d, x=%d, y=%d, distance=%d)\n",
-                    node.id, node.x, node.y, node.distance);
+            System.out.printf("  Node(id=%d, x=%d, y=%d, distance=%d, visited=%s)\n",
+                    node.id, node.x, node.y, node.distance, String.valueOf(node.visited));
         }
     }
 
     public static void printMinHeap(PriorityQueue<Node> stack) {
         System.out.printf("MinHeap (size: %d):\n", stack.size());
         for (var node : stack) {
-            System.out.printf("  Node(id=%d, x=%d, y=%d, distance=%d)\n",
-                    node.id, node.x, node.y, node.distance);
+            System.out.printf("  Node(id=%d, x=%d, y=%d, distance=%d, visited=%s)\n",
+                    node.id, node.x, node.y, node.distance, String.valueOf(node.visited));
         }
     }
 
