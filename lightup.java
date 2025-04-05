@@ -14,7 +14,6 @@ public class lightup {
             }
         }
 
-        // check her out
         for (int row = 0; row < n; row++) {
             for (int col = 0; col < n; col++) {
 
@@ -85,7 +84,6 @@ public class lightup {
                 }
             }
         }
-
 
         // valid
         System.out.println("1");
